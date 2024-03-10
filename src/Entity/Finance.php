@@ -1,0 +1,95 @@
+<?php
+
+namespace App\Entity;
+
+use ApiPlatform\Metadata\ApiResource;
+use App\Enum\FinanceNameEnum;
+use App\Repository\FinanceRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity(repositoryClass: FinanceRepository::class)]
+#[ApiResource]
+class Finance
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(type: 'string', enumType: FinanceNameEnum::class)]
+    private ?string $name = null;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private ?string $slug = null;
+
+    #[ORM\OneToMany(mappedBy: 'finance', targetEntity: Transaction::class)]
+    private Collection $transaction;
+
+    public function __construct()
+    {
+        $this->transaction = new ArrayCollection();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): static
+    {
+        if (!in_array($name, [FinanceNameEnum::INCOME, FinanceNameEnum::DISCHARGE, FinanceNameEnum::DEBT])) {
+            throw new \InvalidArgumentException("Invalid Finance Name value");
+        }
+
+        return $this;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(string $slug): static
+    {
+        $this->slug = $slug;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Transaction>
+     */
+    public function getTransaction(): Collection
+    {
+        return $this->transaction;
+    }
+
+    public function addTransaction(Transaction $transaction): static
+    {
+        if (!$this->transaction->contains($transaction)) {
+            $this->transaction->add($transaction);
+            $transaction->setFinance($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTransaction(Transaction $transaction): static
+    {
+        if ($this->transaction->removeElement($transaction)) {
+            // set the owning side to null (unless already changed)
+            if ($transaction->getFinance() === $this) {
+                $transaction->setFinance(null);
+            }
+        }
+
+        return $this;
+    }
+}
