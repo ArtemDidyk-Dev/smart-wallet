@@ -3,13 +3,20 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use App\Enum\CategoryNameEnum;
 use App\Repository\CategoryRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
-#[ApiResource]
+#[ApiResource(operations: [new Get(), new GetCollection(), new Post(), new Put(),  new Delete() ])]
 class Category
 {
     #[ORM\Id]
@@ -85,6 +92,8 @@ class Category
     {
         $this->subcategories = new ArrayCollection();
         $this->transactions = new ArrayCollection();
+        $this->name = CategoryNameEnum::DEFAULT_CATEGORY_NAME;
+        $this->slug = CategoryNameEnum::DEFAULT_CATEGORY_SLUG;
     }
 
     public function getFinanceId(): ?Finance

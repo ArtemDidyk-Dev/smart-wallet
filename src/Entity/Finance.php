@@ -3,6 +3,11 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Enum\FinanceNameEnum;
 use App\Repository\FinanceRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -10,7 +15,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: FinanceRepository::class)]
-#[ApiResource]
+#[ApiResource(operations: [new Get(), new GetCollection(), new Post(), new Put(),  new Delete() ])]
 class Finance
 {
     #[ORM\Id]
@@ -23,6 +28,7 @@ class Finance
 
     #[ORM\Column(type: 'string', length: 255)]
     private ?string $slug = null;
+
 
     #[ORM\OneToMany(mappedBy: 'finance', targetEntity: Transaction::class)]
     private Collection $transaction;
