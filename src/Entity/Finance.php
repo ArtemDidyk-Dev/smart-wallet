@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Entity;
 
@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Enum\FinanceNameEnum;
@@ -15,7 +16,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: FinanceRepository::class)]
-#[ApiResource(operations: [new Get(), new GetCollection(), new Post(), new Put(),  new Delete() ])]
+#[ApiResource(operations: [new Get(), new GetCollection(), new Post(), new Patch(),  new Delete() ])]
 class Finance
 {
     #[ORM\Id]
@@ -33,9 +34,13 @@ class Finance
     #[ORM\OneToMany(mappedBy: 'finance', targetEntity: Transaction::class)]
     private Collection $transaction;
 
+    #[ORM\OneToMany(mappedBy: 'finance', targetEntity: Category::class)]
+    private Collection $categories;
+
     public function __construct()
     {
         $this->transaction = new ArrayCollection();
+        $this->categories = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -93,6 +98,36 @@ class Finance
             // set the owning side to null (unless already changed)
             if ($transaction->getFinance() === $this) {
                 $transaction->setFinance(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Category>
+     */
+    public function getCategories(): Collection
+    {
+        return $this->categories;
+    }
+
+    public function addCategory(Category $category): static
+    {
+        if (!$this->categories->contains($category)) {
+            $this->categories->add($category);
+            $category->setFinance($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCategory(Category $category): static
+    {
+        if ($this->categories->removeElement($category)) {
+            // set the owning side to null (unless already changed)
+            if ($category->getFinance() === $this) {
+                $category->setFinance(null);
             }
         }
 

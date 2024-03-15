@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Entity;
 
@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Enum\CategoryNameEnum;
@@ -14,9 +15,10 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Money\Money;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
-#[ApiResource(operations: [new Get(), new GetCollection(), new Post(), new Put(),  new Delete() ])]
+#[ApiResource(operations: [new Get(), new GetCollection(), new Post(), new Patch(),  new Delete() ])]
 class Category
 {
     #[ORM\Id]
@@ -30,9 +32,8 @@ class Category
     #[ORM\Column(length: 255)]
     private ?string $slug = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 0)]
-    private ?string $amount = null;
-
+    #[ORM\Column()]
+    private ?Money $amount = null;
 
     public function getId(): ?int
     {
@@ -63,12 +64,12 @@ class Category
         return $this;
     }
 
-    public function getAmount(): ?string
+    public function getAmount(): ?Money
     {
         return $this->amount;
     }
 
-    public function setAmount(string $amount): static
+    public function setAmount(Money $amount): static
     {
         $this->amount = $amount;
 
@@ -82,31 +83,21 @@ class Category
     #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
     private Collection $subcategories;
 
-    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
-    private ?Finance $finance = null;
 
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: Transaction::class)]
     private Collection $transactions;
+
+    #[ORM\ManyToOne(inversedBy: 'categories')]
+    private ?Finance $finance = null;
 
     public function __construct()
     {
         $this->subcategories = new ArrayCollection();
         $this->transactions = new ArrayCollection();
         $this->name = CategoryNameEnum::DEFAULT_CATEGORY_NAME;
-        $this->slug = CategoryNameEnum::DEFAULT_CATEGORY_SLUG;
+        $this->slug = CategoryNameEnum::DEFAULT_CATEGORY_SLAG;
     }
 
-    public function getFinanceId(): ?Finance
-    {
-        return $this->finance;
-    }
-
-    public function setFinanceId(?Finance $finance): static
-    {
-        $this->finance = $finance;
-
-        return $this;
-    }
 
     public function getParent(): ?self
     {
@@ -171,6 +162,18 @@ class Category
                 $transaction->setCategory(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getFinance(): ?Finance
+    {
+        return $this->finance;
+    }
+
+    public function setFinance(?Finance $finance): static
+    {
+        $this->finance = $finance;
 
         return $this;
     }
