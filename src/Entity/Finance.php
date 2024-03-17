@@ -24,23 +24,22 @@ class Finance
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: 'string', enumType: FinanceNameEnum::class)]
+    #[ORM\Column(type: 'string')]
     private ?string $name = null;
 
     #[ORM\Column(type: 'string', length: 255)]
     private ?string $slug = null;
 
+    #[ORM\OneToMany(mappedBy: 'finance', targetEntity: Category::class)]
+    private Collection $categories;
 
     #[ORM\OneToMany(mappedBy: 'finance', targetEntity: Transaction::class)]
     private Collection $transaction;
 
-    #[ORM\OneToMany(mappedBy: 'finance', targetEntity: Category::class)]
-    private Collection $categories;
-
     public function __construct()
     {
-        $this->transaction = new ArrayCollection();
         $this->categories = new ArrayCollection();
+        $this->transaction = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -75,36 +74,6 @@ class Finance
     }
 
     /**
-     * @return Collection<int, Transaction>
-     */
-    public function getTransaction(): Collection
-    {
-        return $this->transaction;
-    }
-
-    public function addTransaction(Transaction $transaction): static
-    {
-        if (!$this->transaction->contains($transaction)) {
-            $this->transaction->add($transaction);
-            $transaction->setFinance($this);
-        }
-
-        return $this;
-    }
-
-    public function removeTransaction(Transaction $transaction): static
-    {
-        if ($this->transaction->removeElement($transaction)) {
-            // set the owning side to null (unless already changed)
-            if ($transaction->getFinance() === $this) {
-                $transaction->setFinance(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
      * @return Collection<int, Category>
      */
     public function getCategories(): Collection
@@ -128,6 +97,36 @@ class Finance
             // set the owning side to null (unless already changed)
             if ($category->getFinance() === $this) {
                 $category->setFinance(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Transaction>
+     */
+    public function getTransaction(): Collection
+    {
+        return $this->transaction;
+    }
+
+    public function addTransaction(Transaction $transaction): static
+    {
+        if (!$this->transaction->contains($transaction)) {
+            $this->transaction->add($transaction);
+            $transaction->setFinance($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTransaction(Transaction $transaction): static
+    {
+        if ($this->transaction->removeElement($transaction)) {
+            // set the owning side to null (unless already changed)
+            if ($transaction->getFinance() === $this) {
+                $transaction->setFinance(null);
             }
         }
 

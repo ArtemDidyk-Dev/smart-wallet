@@ -8,14 +8,14 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
 use App\Enum\CategoryNameEnum;
 use App\Repository\CategoryRepository;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Money\Currency;
 use Money\Money;
+use Webmozart\Assert\Assert;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 #[ApiResource(operations: [new Get(), new GetCollection(), new Post(), new Patch(),  new Delete() ])]
@@ -30,10 +30,10 @@ class Category
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $slug = null;
+    private ?string $slug;
 
-    #[ORM\Column()]
-    private ?Money $amount = null;
+    #[ORM\Column(type: 'money')]
+    private Money $amount;
 
     public function getId(): ?int
     {
@@ -71,6 +71,7 @@ class Category
 
     public function setAmount(Money $amount): static
     {
+        assert($amount instanceof Money);
         $this->amount = $amount;
 
         return $this;
@@ -96,6 +97,7 @@ class Category
         $this->transactions = new ArrayCollection();
         $this->name = CategoryNameEnum::DEFAULT_CATEGORY_NAME;
         $this->slug = CategoryNameEnum::DEFAULT_CATEGORY_SLAG;
+        $this->amount = new Money(0, new Currency('UAH'));
     }
 
 

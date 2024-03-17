@@ -8,10 +8,10 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
 use App\Repository\TransactionRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Money\Money;
 
 #[ORM\Entity(repositoryClass: TransactionRepository::class)]
 #[ApiResource(operations: [new Get(), new GetCollection(), new Post(), new Patch(),  new Delete() ])]
@@ -22,11 +22,8 @@ class Transaction
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'amount')]
-    private ?Finance $finance = null;
-
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 0)]
-    private ?string $amount = null;
+    #[ORM\Column(type: 'money')]
+    private Money $amount;
 
     #[ORM\ManyToOne(inversedBy: 'transactions')]
     private ?Category $category = null;
@@ -37,30 +34,22 @@ class Transaction
     #[ORM\Column]
     private ?\DateTimeImmutable $updated_at = null;
 
+    #[ORM\ManyToOne(inversedBy: 'transaction')]
+    private ?Finance $finance = null;
+
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getFinance(): ?Finance
-    {
-        return $this->finance;
-    }
-
-    public function setFinance(?Finance $finance): static
-    {
-        $this->finance = $finance;
-
-        return $this;
-    }
-
-    public function getAmount(): ?string
+    public function getAmount(): ?Money
     {
         return $this->amount;
     }
 
-    public function setAmount(string $amount): static
+    public function setAmount(Money $amount): static
     {
+        assert($amount instanceof Money);
         $this->amount = $amount;
 
         return $this;
@@ -98,6 +87,18 @@ class Transaction
     public function setUpdatedAt(\DateTimeImmutable $updated_at): static
     {
         $this->updated_at = $updated_at;
+
+        return $this;
+    }
+
+    public function getFinance(): ?Finance
+    {
+        return $this->finance;
+    }
+
+    public function setFinance(?Finance $finance): static
+    {
+        $this->finance = $finance;
 
         return $this;
     }

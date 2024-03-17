@@ -15,10 +15,10 @@ class Mapper
     public static function createFromEntity(CategoryEntity $category): CategoryDTO
     {
         return new CategoryDTO(
-            name: $category->getSlug() == null ? null : CategoryVO::createFromString($category->getSlug()),
+            name: $category->getSlug() === null ? null : CategoryVO::createFromString($category->getSlug()),
             slug: CategoryVO::createFromString($category->getName()),
-            amount: $category->getAmount()->getAmount() ?? null,
-            currencyCode: $category->getAmount()->getCurrency()->getCode()
+            amount: $category->getAmount()?->getAmount(),
+            currencyCode: $category->getAmount()?->getCurrency()->getCode()
         );
     }
 }
