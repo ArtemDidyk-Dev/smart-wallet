@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -13,8 +14,9 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Money\Money;
 
+#[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: TransactionRepository::class)]
-#[ApiResource(operations: [new Get(), new GetCollection(), new Post(), new Patch(),  new Delete() ])]
+#[ApiResource(operations: [new Get(), new GetCollection(), new Post(), new Patch(), new Delete()])]
 class Transaction
 {
     #[ORM\Id]
@@ -28,14 +30,22 @@ class Transaction
     #[ORM\ManyToOne(inversedBy: 'transactions')]
     private ?Category $category = null;
 
-    #[ORM\Column]
-    private ?\DateTimeImmutable $created_at = null;
+    #[ApiProperty(readable: false, writable: false)]
+    #[ORM\Column(type: 'datetime_immutable')]
+    private \DateTimeImmutable $createdAd;
 
-    #[ORM\Column]
-    private ?\DateTimeImmutable $updated_at = null;
+    #[ApiProperty(readable: false, writable: false)]
+    #[ORM\Column(type: 'datetime_immutable')]
+    private ?\DateTimeImmutable $updatedAd;
 
     #[ORM\ManyToOne(inversedBy: 'transaction')]
     private ?Finance $finance = null;
+
+    public function __construct()
+    {
+        $this->createdAd = new \DateTimeImmutable();
+        $this->updatedAd = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
@@ -67,26 +77,19 @@ class Transaction
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAd(): ?\DateTimeImmutable
     {
-        return $this->created_at;
+        return $this->createdAd;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $created_at): static
+    public function getUpdatedAd(): ?\DateTimeImmutable
     {
-        $this->created_at = $created_at;
-
-        return $this;
+        return $this->updatedAd;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function setUpdatedAd(\DateTimeImmutable $updatedAd): static
     {
-        return $this->updated_at;
-    }
-
-    public function setUpdatedAt(\DateTimeImmutable $updated_at): static
-    {
-        $this->updated_at = $updated_at;
+        $this->updatedAd = $updatedAd;
 
         return $this;
     }
@@ -101,5 +104,18 @@ class Transaction
         $this->finance = $finance;
 
         return $this;
+    }
+
+    #[ORM\PrePersist]
+    public function onPrePersist(): void
+    {
+        $this->createdAd = new \DateTimeImmutable('now');
+        $this->updatedAd = new \DateTimeImmutable('now');
+    }
+
+    #[ORM\PreUpdate]
+    public function onPreUpdate(): void
+    {
+        $this->updatedAd = new \DateTimeImmutable();
     }
 }

@@ -10,17 +10,21 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Enum\CategoryNameEnum;
 use App\Repository\CategoryRepository;
+use App\Trait\CategoryEquals;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use InvalidArgumentException;
 use Money\Currency;
 use Money\Money;
 use Webmozart\Assert\Assert;
-
+#[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
-#[ApiResource(operations: [new Get(), new GetCollection(), new Post(), new Patch(),  new Delete() ])]
+#[ApiResource(operations: [new Get(), new GetCollection(), new Post(), new Patch(), new Delete()])]
 class Category
 {
+    use CategoryEquals;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -106,9 +110,23 @@ class Category
         return $this->parent;
     }
 
-    public function setParent(?self $parent): self
+    public function setParent(?Category $parent): self
     {
         $this->parent = $parent;
+
+        if (!$this->getSubcategories()->isEmpty()) {
+            $this->getSubcategories()->map(function ($category) {
+                if ($this->equalsToObject($category, $this->parent)) {
+                    throw new InvalidArgumentException('An object cannot be a parent if it is already a child');
+                }
+            });
+        }
+
+        if ($this->equals($this->parent)) {
+            throw new InvalidArgumentException('Object can not be parent of itself');
+        }
+
+        $this->parent->getSubcategories()->add($this);
         return $this;
     }
 
@@ -119,6 +137,15 @@ class Category
 
     public function addSubcategory(self $subcategory): self
     {
+        if ($this->equals($subcategory)) {
+            throw new InvalidArgumentException('Category can not be subcategory of itself');
+        }
+
+        if ($this->equalsToObject($this->getParent(), $subcategory)) {
+            throw new InvalidArgumentException('Category cannot be a child if it is already a parent');
+        }
+
+
         if (!$this->subcategories->contains($subcategory)) {
             $this->subcategories[] = $subcategory;
             $subcategory->setParent($this);
@@ -179,6 +206,5 @@ class Category
 
         return $this;
     }
-
 
 }

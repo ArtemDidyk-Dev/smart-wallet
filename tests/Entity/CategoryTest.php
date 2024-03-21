@@ -3,6 +3,7 @@
 namespace App\Tests\Entity;
 
 use App\Entity\Category;
+use InvalidArgumentException;
 use Money\Currency;
 use Money\Money;
 use PHPUnit\Framework\TestCase;
@@ -33,18 +34,76 @@ class CategoryTest extends TestCase
 
     public function testSubcategory(): void
     {
+        $parentCategory = new Category();
+        $parentCategory->setName('Father');
+        $parentCategory->setSlug('father');
+        $parentCategory->setAmount(new Money('10', new Currency('UAH')));
+
+        $subCategory = new Category();
+        $subCategory->setName('Baby');
+        $subCategory->setSlug('kid');
+        $subCategory->setAmount(new Money('10', new Currency('UAH')));
+        $subCategory->setParent($parentCategory);
+
+        $this->assertSame($parentCategory, $subCategory->getParent());
+        $this->assertSame($subCategory, $parentCategory->getSubcategories()->first());
+    }
+
+    public function testExpectExceptionParentItSelf(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
         $category = new Category();
-        $category->setName('Increase the price');
-        $category->setSlug('increase-the-price');
+        $category->setName('Food');
+        $category->setSlug('food');
         $category->setAmount(new Money('10', new Currency('UAH')));
+        $category->setParent($category);
+    }
 
-        $categorySub =  new Category();
-        $categorySub->setName('Restaurant');
-        $categorySub->setSlug('restaurant');
-        $categorySub->setAmount(new Money('10', new Currency('UAH')));
-        $categorySub->setParent($category);
-        $this->assertInstanceOf( Category::class, $categorySub->getParent());
+    public function testExpectExceptionSubcategoryItSelf(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $category = new Category();
+        $category->setName('Food');
+        $category->setSlug('food');
+        $category->setAmount(new Money('10', new Currency('UAH')));
+        $category->addSubcategory($category);
+    }
 
+    public function testExpectExceptionParentIfAlreadyAChild(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $parentCategory = new Category();
+        $parentCategory->setName('Father');
+        $parentCategory->setSlug('father');
+        $parentCategory->setAmount(new Money('10', new Currency('UAH')));
+
+        $subCategory = new Category();
+        $subCategory->setName('Baby');
+        $subCategory->setSlug('kid');
+        $subCategory->setAmount(new Money('10', new Currency('UAH')));
+        $subCategory->setParent($parentCategory);
+
+        $parentCategory->setParent($subCategory);
+
+
+    }
+
+    public function testExpectExceptionChildIfItIsAlreadyParent(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $parentCategory = new Category();
+        $parentCategory->setName('Father');
+        $parentCategory->setSlug('father');
+        $parentCategory->setAmount(new Money('10', new Currency('UAH')));
+
+        $subCategory = new Category();
+        $subCategory->setParent($parentCategory);
+        $subCategory->setName('Baby');
+        $subCategory->setSlug('kid');
+        $subCategory->setAmount(new Money('10', new Currency('UAH')));
+
+        $subCategory->addSubcategory($parentCategory);
     }
 
 }
