@@ -77,12 +77,12 @@ class Transaction
         return $this;
     }
 
-    public function getCreatedAd(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAd;
     }
 
-    public function getUpdatedAd(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAd;
     }

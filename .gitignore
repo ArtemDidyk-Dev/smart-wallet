@@ -180,3 +180,4 @@ fabric.properties
 ###< symfony/phpunit-bridge ###
 /var/
 /vendor/
+public/bundles/

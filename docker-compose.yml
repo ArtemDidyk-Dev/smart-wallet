@@ -1,25 +1,23 @@
-version: "3.8"
-
 networks:
-  smart-wallet-network:
-    name: smart-wallet-network
+  smartwallet:
+    name: smartwallet
     external: true
 
 services:
   php:
-    container_name: smart-wallet-php
+    container_name: smartwallet-php
     env_file:
       - .env
     networks:
-      - smart-wallet-network
+      - smartwallet
     restart: unless-stopped
 
   caddy:
-    container_name: smart-wallet-caddy
+    container_name: smartwallet-caddy
     depends_on:
       - php
     ports:
       - "8950:80"
     networks:
-      - smart-wallet-network
+      - smartwallet
     restart: unless-stopped

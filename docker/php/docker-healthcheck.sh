@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-if env -i REQUEST_METHOD=GET SCRIPT_NAME=/ping SCRIPT_FILENAME=/ping cgi-fcgi -bind -connect smart-wallet-php:9000; then
+if env -i REQUEST_METHOD=GET SCRIPT_NAME=/ping SCRIPT_FILENAME=/ping cgi-fcgi -bind -connect smartwallet-php:9000; then
 	exit 0
 fi
 

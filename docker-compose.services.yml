@@ -1,23 +1,23 @@
-version: '3.7'
-
 networks:
-  smart-wallet-network:
-    name: smart-wallet-network
+  smartwallet:
+    name: smartwallet
 
 services:
   mysql:
     image: mysql:8.0
-    container_name: smart-wallet-mysql
+    container_name: smartwallet-mysql
     command: --default-authentication-plugin=mysql_native_password
+    env_file:
+      - .env
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: smart-walletdb
-      MYSQL_USER: smart-wallet
-      MYSQL_PASSWORD: smart-wallet
+      MYSQL_DATABASE: smartwallet
+      MYSQL_USER: smartwallet
+      MYSQL_PASSWORD: smartwallet
     volumes:
-      - /opt/docker/smart-walletdb/mysql:/var/lib/mysql:delegated
+      - /opt/docker/smartwallet/mysql:/var/lib/mysql:delegated
     networks:
-      - smart-wallet-network
+      - smartwallet
     ports:
       - "8952:3306"
     restart: unless-stopped
